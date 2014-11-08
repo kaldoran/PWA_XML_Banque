@@ -18,8 +18,8 @@ XML :
   - Faire un programme qui scan l'arrivé de nouveau fichier dans un dossier.
   - Lire le fichier en verifiant l'intégrité / le traiter
   - Inserer en BDD
-  - crée le pain.002
-  - Deplacer le fichier que l'on à traité dans un .archive
+  - créer le pain.002
+  - Deplacer le fichier que l'on a traité dans un .archive
 
 JAVA :
   -
