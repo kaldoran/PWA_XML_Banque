@@ -9,7 +9,7 @@ Logiciel :
   - AngularJS
   - Spring
   - JSP
-  - 
+
 Code en anglais !
 
 .gitignore obligé
