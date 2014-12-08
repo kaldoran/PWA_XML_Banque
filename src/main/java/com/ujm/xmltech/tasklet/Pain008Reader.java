@@ -39,7 +39,7 @@ public class Pain008Reader implements Tasklet {
     private Object SystemClockFactory;
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
-        //Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
+        Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
         /*if(o !=null) {
             System.out.println("file readed : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
                                                         + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );

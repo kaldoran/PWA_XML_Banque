@@ -9,20 +9,20 @@ public class BankSimulationConstants {
   /**
    * Directory where are reports
    */
-  public final static String OUT_DIRECTORY = "/home/kaldoran/Public/out/";
+  public final static String OUT_DIRECTORY = "/home/kaldoran/Public/Out/";
   /**
    * Directory where are files under process
    */
-  public final static String WORK_DIRECTORY = "/home/kaldoran/Public/work/";
+  public final static String WORK_DIRECTORY = "/home/kaldoran/Public/Work/";
   /**
    * Directory where are files already processed
    */
-  public final static String ARCHIVE_DIRECTORY = "/home/kaldoran/Public/archive/";
+  public final static String ARCHIVE_DIRECTORY = "/home/kaldoran/Public/Archive/";
   
   /**
    * Directory where file go when reject
    */
-  public final static String REJECT_DIRECTORY = "/home/kaldoran/Public/reject/";
+  public final static String REJECT_DIRECTORY = "/home/kaldoran/Public/Reject/";
     
   public final static String XSD_DIRECTORY = "/home/kaldoran/Public/Xsd/";
   

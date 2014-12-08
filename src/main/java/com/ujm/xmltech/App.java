@@ -2,12 +2,9 @@ package com.ujm.xmltech;
 
 import com.ujm.xmltech.utils.BankSimulationConstants;
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.ApplicationContext;
