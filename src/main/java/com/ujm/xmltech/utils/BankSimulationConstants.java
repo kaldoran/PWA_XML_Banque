@@ -5,23 +5,29 @@ public class BankSimulationConstants {
   /**
    * Directory where are files to process
    */
-  public final static String IN_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/in/";
+  public final static String IN_DIRECTORY = "/home/kaldoran/Public/Xml/";
   /**
    * Directory where are reports
    */
-  public final static String OUT_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/out/";
+  public final static String OUT_DIRECTORY = "/home/kaldoran/Public/Out/";
   /**
    * Directory where are files under process
    */
-  public final static String WORK_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/work/";
+  public final static String WORK_DIRECTORY = "/home/kaldoran/Public/Work/";
   /**
    * Directory where are files already processed
    */
-  public final static String ARCHIVE_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/archive/";
+  public final static String ARCHIVE_DIRECTORY = "/home/kaldoran/Public/Archive/";
+  
   /**
-   * Directory where are files already processed
+   * Directory where file go when reject
    */
-  public final static String XSD_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/src/main/resources/xsd/";
+  public final static String REJECT_DIRECTORY = "/home/kaldoran/Public/Reject/";
+    
+  public final static String XSD_DIRECTORY = "/home/kaldoran/Public/Xsd/";
+  
+  
+
   /**
    * must contain only 4 upper case letters. Real example : BNPP
    */
@@ -36,4 +42,4 @@ public class BankSimulationConstants {
    */
   public static final String TRANSACTION_MANAGER = "bankTransactionManager";
 
-}           
+}
