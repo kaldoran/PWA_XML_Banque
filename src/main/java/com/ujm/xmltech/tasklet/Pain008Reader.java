@@ -36,7 +36,7 @@ public class Pain008Reader implements Tasklet {
     
     @Autowired
     private TransactionService service;
-    private Object SystemClockFactory;
+    
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
         Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
@@ -74,7 +74,7 @@ public class Pain008Reader implements Tasklet {
                     DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
                     t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
                     t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId());
-                    System.out.println("SeqTp : " + directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
+                    //System.out.println("SeqTp : " + directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
                     /** do pain008Processor step*/
                     pain008Processor(   t, 
                                         directDebitTransactionInformation.getInstdAmt().getCcy() , 
