@@ -2,22 +2,22 @@ package com.ujm.xmltech.utils;
 
 public class BankSimulationConstants {
 
-  /**
+   /**
    * Directory where are files to process
    */
-  public final static String IN_DIRECTORY = "/home/kaldoran/Public/Xml/";
+  public final static String IN_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/in/";
   /**
    * Directory where are reports
    */
-  public final static String OUT_DIRECTORY = "/home/kaldoran/Public/Out/";
+  public final static String OUT_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/out/";
   /**
    * Directory where are files under process
    */
-  public final static String WORK_DIRECTORY = "/home/kaldoran/Public/Work/";
+  public final static String WORK_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/work/";
   /**
    * Directory where are files already processed
    */
-  public final static String ARCHIVE_DIRECTORY = "/home/kaldoran/Public/Archive/";
+  public final static String ARCHIVE_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/archive/";
   
   /**
    * Directory where file go when reject
