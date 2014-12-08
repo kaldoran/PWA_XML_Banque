@@ -24,7 +24,7 @@ public class BankSimulationConstants {
    */
   public final static String REJECT_DIRECTORY = "/home/kaldoran/Public/Reject/";
     
-  public final static String XSD_DIRECTORY = "/home/kaldoran/Public/Xsd/";
+  public final static String XSD_DIRECTORY = "/home/kevin/NetBeansProjects/TP2_JAXB/src/main/resources/xsd/";
   
   
 
