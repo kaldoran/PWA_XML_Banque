@@ -5,7 +5,7 @@
 	<artifactId>SpringBatchExample</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>SpringBatchExample</name>
+	<name>PWA_XML_Banque</name>
 
 	<properties>
 		<jdk.version>1.6</jdk.version>
