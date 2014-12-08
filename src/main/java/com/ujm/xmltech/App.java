@@ -33,15 +33,19 @@ public void launch() {
   }
 
 private File retrieveFileToProcess() {
-    File toReturn = null;
-    
     File folder = new File(BankSimulationConstants.IN_DIRECTORY);
-    for(File file : folder.listFiles()) {
-        System.out.println("file found : " + file.getName());
-        toReturn = file;
+    
+    for (File file : folder.listFiles()) {
+        if ( file.getName().endsWith(".xml")) {
+            System.out.println("File found : " + file.getName());
+            return file;
+        }
+        else {
+            System.out.println("Reject File !");
+            file.renameTo(new File(BankSimulationConstants.REJECT_DIRECTORY + file.getName()));
+        }
     }
-
-    return toReturn;
+    return null;
   }
 
 /*
