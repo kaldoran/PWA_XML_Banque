@@ -18,7 +18,7 @@ public class MoveToArchive implements Tasklet {
     System.out.println("file to move " + input);
     File file = new File(BankSimulationConstants.WORK_DIRECTORY + input);
     boolean moved = file.renameTo(new File(BankSimulationConstants.ARCHIVE_DIRECTORY + input));
-    System.out.println("file moved : " + moved + " in [" + file.getAbsolutePath() + "]");
+    System.out.println("file moved : " + moved + " in [" + BankSimulationConstants.ARCHIVE_DIRECTORY + "]");
     return RepeatStatus.FINISHED;
   }
 
