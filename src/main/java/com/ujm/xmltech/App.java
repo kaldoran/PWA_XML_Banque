@@ -30,16 +30,21 @@ public void launch() {
   }
 
 private File retrieveFileToProcess() {
-        System.out.println("Recherche de fichier.");
-        File repIn = new File(BankSimulationConstants.IN_DIRECTORY);
-        File[] requetes = repIn.listFiles();
+    System.out.println("Recherche de fichier.");
+    File repIn = new File(BankSimulationConstants.IN_DIRECTORY);
+    File[] requetes = repIn.listFiles();
 
-        if (requetes.length > 0) {
-            System.out.println("Traitement du fichier :" + requetes[0]);
-            return requetes[0];
+    for (int i = 0; i < requetes.length; ++i) {
+        if (requetes[i].getName().endsWith(".xml")) {
+            System.out.println("Traitement du fichier :" + requetes[i]);
+            return requetes[i];
+        } else {
+            System.out.println("Reject File !");
+            requetes[i].renameTo(new File(BankSimulationConstants.REJECT_DIRECTORY + requetes[i].getName()));
         }
+    }
 
-        return null;
+    return null;
   }
 
 /*

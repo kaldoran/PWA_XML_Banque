@@ -94,7 +94,7 @@ public class Pain008Reader implements Tasklet {
     }
     
     public boolean pain008Processor( Transaction transaction, String Ccy, String BIC) {
-        boolean isExisted = false;
+        boolean existes = false;
         String bank = BIC.substring(0, 4);
         //GregorianCalendar grgrnCldr = new GregorianCalendar();
         //Date today = grgrnCldr.getTime();
@@ -104,15 +104,15 @@ public class Pain008Reader implements Tasklet {
         
         
         /** if debit account belongs to existed banks */
-        for ( Banks existedBank : Banks.values() ) {
-            System.out.println("existedBank : " + existedBank.toString() + " " + existedBank.name());
-            if ( bank.equals(existedBank.toString()) ) {
-                isExisted = true;
-                System.out.println(" isExisted TRUE !!");
+        for ( Banks bankExistes : Banks.values() ) {
+            System.out.println("bankExistes : " + bankExistes.toString() + " " + bankExistes.name());
+            if ( bank.equals(bankExistes.toString()) ) {
+                existes = true;
+                System.out.println(" existes TRUE !!");
                 break;
             }
         }
-        if ( !isExisted ) {
+        if ( !existes ) {
             return false;
         }
         
