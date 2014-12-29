@@ -24,3 +24,15 @@ Un ls sur "ProjetXML" affichera le contenu de "/media/Public".
 
 Vous pouvez également modifier les constantes de : BankSimulationConstants présent dans le package 
 "com.ujm.xmltech.utils"
+
+### Tuer Tomcat
+Parfois tomcat ne s'arrete pas ( et ne veut pas se couper proprement ).
+Plutôt que de faire un killall java, voici la commande
+
+```bash 
+lsof -i -P | grep "*:8084" | kill -9 $(awk {'print $2'})
+```
+Dépendances : lsof, grep, awk.
+
+Cette commande tuera le processus java associé au serveur lancé sur le port 8084.
+Si vous avez lancé votre tomcat sur un port différent changer le numéro de port.
