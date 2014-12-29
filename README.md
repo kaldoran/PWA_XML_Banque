@@ -38,4 +38,4 @@ lsof -i -P | grep "*:<tomcat port>" | kill -9 $(awk {'print $2'})
 Dependencies : lsof, grep, awk.
 
 
-This command will kill the java process associated to the server lauched on the port <tomcat port>.
+This command will kill the java process associated to the server lauched on the port  ```<tomcat port>```.
