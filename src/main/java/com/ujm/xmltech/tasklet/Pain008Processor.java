@@ -12,8 +12,8 @@ import java.util.Iterator;
 
 public class Pain008Processor implements Tasklet {
 
-  @Autowired
-  private TransactionService service;
+  /*@Autowired
+  private TransactionService service;*/
 
   @Override
   public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
