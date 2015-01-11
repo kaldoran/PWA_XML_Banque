@@ -73,13 +73,21 @@ public class Pain008Reader implements Tasklet {
                 while (it2.hasNext()) {
                     t = new Transaction();
                     DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
+                    
                     t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
+                    
                     t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId()); 
+                    
                     t.setMandatID(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
+                    
                     t.setDateOfSignature(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().toString());
+                    
                     t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
+                    
                     t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
+                    
                     t.setIBAN_creditor(transaction.getCdtrAcct().getId().getIBAN());
+                    
                     t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
 //System.out.println("SeqTp : " + directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
                     /** do pain008Processor step*/
@@ -111,10 +119,49 @@ public class Pain008Reader implements Tasklet {
         Date today = grgrnCldr.getTime();
         //System.out.println(today.toString());
         System.out.println("aujourd'hui  : " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH)); 
+        
+        //if debit account belongs to existed banks  (RJC000)
+        //
+        //
+        for ( Banks bankExistes : Banks.values() ) {
+            System.out.println("bankExistes : " + bankExistes.toString() + " " + bankExistes.name());
+            if ( bank.equals(bankExistes.toString()) ) {
+                existes = true;
+                System.out.println(" existes TRUE !!");
+                break;
+            }
+        }
+        
+        if ( !existes ) {
+            return false;
+        }
+        
+        // if transaction's amount is less than 1 euro (RJC001)
+        //
+        //
+        if ( transaction.getAmount() < 1 ) {
+            System.out.println("rejected amount less than 1");
+            return false; 
+        }
+        
+        // if transaction's amount is  greater than 10 000 euros (RJC002)
+        //
+        //
+        if ( transaction.getAmount() > 10000) {
+            System.out.println("rejected amount less than 10 000");
+            return false;
+        }
+        
+        //if amount's money is different than euro (RJC003)
+        //
+        //
+        if ( !Ccy.equals("EUR") ) {
+            return false;
+        }
+        
         //Il n'est pas autorisé de créer une transaction dans la passé (RJC004)
         //
-        //
-        System.out.println("today" + today.toString() + " < Date date of Transaction : " + dateOfTransaction.toString() + " compare " + today.compareTo(dateOfTransaction));
+        // 
         if(today.after(dateOfTransaction)) {
             System.out.println("rejeted : date of transaction is outdated");
             return false;
@@ -142,37 +189,6 @@ public class Pain008Reader implements Tasklet {
             }
         }
         
-        /** if debit account belongs to existed banks */
-        for ( Banks bankExistes : Banks.values() ) {
-            System.out.println("bankExistes : " + bankExistes.toString() + " " + bankExistes.name());
-            if ( bank.equals(bankExistes.toString()) ) {
-                existes = true;
-                System.out.println(" existes TRUE !!");
-                break;
-            }
-        }
-        
-        if ( !existes ) {
-            return false;
-        }
-        
-        /**if amount's money is different than euro*/
-        if ( !Ccy.equals("EUR") ) {
-            return false;
-        }
-        
-        /** if transaction's amount is less than 1 euro*/
-        if ( transaction.getAmount() < 1 ) {
-            System.out.println("rejected amount less than 1");
-            return false; 
-        }
-        
-        /** if transaction's amount is  greater than 10 000 euros */
-        if ( transaction.getAmount() > 10000) {
-            System.out.println("rejected amount less than 10 000");
-            return false;
-        }
-
         service.createTransaction(transaction);
         return true;
     }
