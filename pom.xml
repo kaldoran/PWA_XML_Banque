@@ -20,7 +20,13 @@
         <querydsl-version>2.1.1</querydsl-version>
     </properties>
     
-    <dependencies>   
+    <dependencies>
+        <dependency>
+            <groupId>com.ujm.xmltech</groupId>
+            <artifactId>SpringBatchExample</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>war</type>
+        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

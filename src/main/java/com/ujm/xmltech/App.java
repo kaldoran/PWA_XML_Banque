@@ -8,6 +8,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class App {
@@ -25,7 +26,11 @@ public void launch() {
         System.out.println("Exit Status : " + execution.getStatus());
       } catch (Exception e) {
         e.printStackTrace();
-      }
+      } finally {
+            if (context != null){
+                ((AbstractApplicationContext) context).close();
+            }
+        }
     }
   }
 

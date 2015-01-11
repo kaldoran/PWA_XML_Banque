@@ -36,6 +36,7 @@ public class Pain008Reader implements Tasklet {
     
     @Autowired
     private TransactionService service;
+    private Date date_today = new Date();
     
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
@@ -73,13 +74,22 @@ public class Pain008Reader implements Tasklet {
                     t = new Transaction();
                     DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
                     t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
-                    t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId());
-                    //System.out.println("SeqTp : " + directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
+                    t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId()); 
+                    t.setMandatID(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
+                    t.setDateOfSignature(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().toString());
+                    t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
+                    t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
+                    t.setIBAN_creditor(transaction.getCdtrAcct().getId().getIBAN());
+                    t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
+//System.out.println("SeqTp : " + directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
                     /** do pain008Processor step*/
                     pain008Processor(   t, 
                                         directDebitTransactionInformation.getInstdAmt().getCcy() , 
-                                        directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
-                    //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
+                                        directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
+                                        transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
+                                        directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar());
+    
+    //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
                 }
 
                 System.out.println(transaction.getPmtInfId());
@@ -93,15 +103,44 @@ public class Pain008Reader implements Tasklet {
         return RepeatStatus.FINISHED;
     }
     
-    public boolean pain008Processor( Transaction transaction, String Ccy, String BIC) {
+    public boolean pain008Processor( Transaction transaction, String Ccy, String BIC, Date dateOfTransaction, GregorianCalendar dateOfSignature) {
+        int diffMonth,diffYears,diffDays;
         boolean existes = false;
         String bank = BIC.substring(0, 4);
-        //GregorianCalendar grgrnCldr = new GregorianCalendar();
-        //Date today = grgrnCldr.getTime();
+        GregorianCalendar grgrnCldr = new GregorianCalendar();
+        Date today = grgrnCldr.getTime();
         //System.out.println(today.toString());
+        System.out.println("aujourd'hui  : " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH)); 
+        //Il n'est pas autorisé de créer une transaction dans la passé (RJC004)
+        //
+        //
+        System.out.println("today" + today.toString() + " < Date date of Transaction : " + dateOfTransaction.toString() + " compare " + today.compareTo(dateOfTransaction));
+        if(today.after(dateOfTransaction)) {
+            System.out.println("rejeted : date of transaction is outdated");
+            return false;
+        }
         
-        System.out.println("bank : " + bank);
-        
+        //Il n'est pas autorisé de créer une transaction dans plus de 13 mois (RJC005)
+        //
+        //
+        diffYears = today.getYear() - dateOfSignature.getTime().getYear();
+        if(diffYears > 0) {
+            diffMonth = (diffYears*12-dateOfSignature.getTime().getMonth()) + today.getMonth();
+            if(diffMonth > 13) {
+                System.out.println("rejected date of transaction outdates 13 months");
+                return false;
+            }
+            
+            if(diffMonth == 13) {
+                System.out.println("day date of signature : " + dateOfSignature.get(GregorianCalendar.DAY_OF_MONTH) + " today " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH));
+                diffDays = dateOfSignature.get(GregorianCalendar.DAY_OF_MONTH) - grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH);
+                
+                if(diffDays < 0) {
+                    System.out.println("rejected date of transaction outdates 13 months");
+                    return false;
+                }
+            }
+        }
         
         /** if debit account belongs to existed banks */
         for ( Banks bankExistes : Banks.values() ) {
@@ -112,6 +151,7 @@ public class Pain008Reader implements Tasklet {
                 break;
             }
         }
+        
         if ( !existes ) {
             return false;
         }
@@ -132,18 +172,8 @@ public class Pain008Reader implements Tasklet {
             System.out.println("rejected amount less than 10 000");
             return false;
         }
-        
-        //Il n'est pas autorisé de créer une transaction dans la passé (RJC004)
-        //
-        //
-        
-        
-        //Il n'est pas autorisé de créer une transaction dans plus de 13 mois (RJC005)
-        //
-        //
-        
-        
+
         service.createTransaction(transaction);
         return true;
     }
-}
+}     

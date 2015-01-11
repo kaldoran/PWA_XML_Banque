@@ -6,6 +6,7 @@ package com.ujm.xmltech.utils;
  */
 public enum Banks {
     BKNK,
-    GRPK;
+    GRPK,
+    UDEV;
     
 }
