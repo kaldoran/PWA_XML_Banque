@@ -7,5 +7,7 @@ public interface TransactionDao {
   void createTransaction(Transaction transaction);
 
   Transaction findTransactionById(long id);
+  
+  Transaction findTransactionByMandatID(String mandat_id);
 
 }

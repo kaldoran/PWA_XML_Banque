@@ -35,4 +35,13 @@ public class TransactionDaoImpl implements TransactionDao {
         return q.uniqueResult(transaction);
     }
 
+    @Override
+    public Transaction findTransactionByMandatID(String mandat_id) {
+        JPAQuery q = new JPAQuery(entityManager);
+        QTransaction transaction = QTransaction.transaction;
+        q.from(transaction);
+        q.where(transaction.mandat_debitor.contains(mandat_id));
+        return q.singleResult(transaction);
+    }
+
 }

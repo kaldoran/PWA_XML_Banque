@@ -17,4 +17,9 @@ public class TransactionServiceImpl implements TransactionService {
     public void createTransaction(Transaction transaction) {
         dao.createTransaction(transaction);
     }
+
+    @Override
+    public Transaction findTransactionByMandatID(String mandat_id) {
+        return dao.findTransactionByMandatID(mandat_id);
+    }
 }

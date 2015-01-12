@@ -19,7 +19,10 @@ import com.ujm.xmltech.utils.BankSimulationConstants;
 
 public class Pain008Checker implements Tasklet {
 
+  public static boolean isValide = true;
+    
   public boolean checkFile(String fileName) {
+    isValide = true;
     try {
       File fileToValidate = new File(BankSimulationConstants.WORK_DIRECTORY + fileName);
       File xsdFile = new File(BankSimulationConstants.XSD_DIRECTORY + "pain.008.001.02.xsd");
@@ -28,10 +31,14 @@ public class Pain008Checker implements Tasklet {
       Validator validator = schema.newValidator();
       validator.validate(new StreamSource(fileToValidate));
     } catch (SAXException e) {
-      e.printStackTrace();
+      //e.printStackTrace();
+      isValide = false;
+      System.out.println(" ça foncionne !!!!");
       return false;
     } catch (IOException e) {
       e.printStackTrace();
+      isValide = false;
+        
       return false;
     }
     

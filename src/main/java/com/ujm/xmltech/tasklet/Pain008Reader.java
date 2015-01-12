@@ -33,22 +33,26 @@ import java.util.GregorianCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class Pain008Reader implements Tasklet {
-    
+
     @Autowired
     private TransactionService service;
     private Date date_today = new Date();
-    
+
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
-        Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
-        /*if(o !=null) {
-            System.out.println("file readed : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
-                                                        + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-            arg1.getStepContext().getStepExecution().getExecutionContext().put("it", o);
-        } else {
-            System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
-                                                        + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-        }*/
+        if (Pain008Checker.isValide) {
+            System.out.println("inputFile : " + (String) arg1.getStepContext().getJobParameters().get("inputFile"));
+            Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
+            /*if(o !=null) {
+                System.out.println("file readed : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
+                + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
+                arg1.getStepContext().getStepExecution().getExecutionContext().put("it", o);
+            } else {
+                System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
+                + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
+            }*/
+        }
+
         
         return RepeatStatus.FINISHED;
     }
@@ -65,44 +69,53 @@ public class Pain008Reader implements Tasklet {
             Document document = (Document) element.getValue();
             GroupHeader39 header = document.getCstmrDrctDbtInitn().getGrpHdr();
             System.out.println(header.getMsgId());
-            Iterator<PaymentInstructionInformation4> it = document.getCstmrDrctDbtInitn().getPmtInf().iterator();
-            while (it.hasNext()) {
-                PaymentInstructionInformation4 transaction = it.next();
-                Transaction t = null;
-                Iterator<DirectDebitTransactionInformation9> it2 = transaction.getDrctDbtTxInf().iterator();
-                while (it2.hasNext()) {
-                    t = new Transaction();
-                    DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
-                    
-                    t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
-                    
-                    t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId()); 
-                    
-                    t.setMandatID(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
-                    
-                    t.setDateOfSignature(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().toString());
-                    
-                    t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
-                    
-                    t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
-                    
-                    t.setIBAN_creditor(transaction.getCdtrAcct().getId().getIBAN());
-                    
-                    t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
-//System.out.println("SeqTp : " + directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
-                    /** do pain008Processor step*/
-                    pain008Processor(   t, 
-                                        directDebitTransactionInformation.getInstdAmt().getCcy() , 
-                                        directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
-                                        transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
-                                        directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar());
-    
-    //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
-                }
 
-                System.out.println(transaction.getPmtInfId());
-            }
-            return document.getCstmrDrctDbtInitn();
+            if(checkSumChecker(header, document.getCstmrDrctDbtInitn().getPmtInf().iterator())) {
+            
+                Iterator<PaymentInstructionInformation4> it = document.getCstmrDrctDbtInitn().getPmtInf().iterator();
+
+                while (it.hasNext()) {
+                    PaymentInstructionInformation4 transaction = it.next();
+                    Transaction t = null;
+                    Iterator<DirectDebitTransactionInformation9> it2 = transaction.getDrctDbtTxInf().iterator();
+                    while (it2.hasNext()) {
+                        t = new Transaction();
+                        DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
+
+                        t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
+
+                        t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId());
+
+                        t.setMandat_debitor(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
+
+                        t.setDateOfSignature(String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getDate()) + "-"
+                                + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getMonth()) + "-"
+                                + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getYear()));
+
+                        t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
+
+                        t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
+
+                        t.setIBAN_creditor(transaction.getCdtrAcct().getId().getIBAN());
+
+                        t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
+   
+                        // do pain008Processor step
+                        //
+                        //
+                        directDebitTransactionInformation.getPmtTpInf().getSeqTp().value();
+                        pain008Processor(t,
+                                directDebitTransactionInformation.getInstdAmt().getCcy(),
+                                directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
+                                transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
+                                directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar(),
+                                directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
+
+                        //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
+                    }
+                 
+                }
+            } 
         } catch (JAXBException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -110,86 +123,144 @@ public class Pain008Reader implements Tasklet {
         }
         return RepeatStatus.FINISHED;
     }
-    
-    public boolean pain008Processor( Transaction transaction, String Ccy, String BIC, Date dateOfTransaction, GregorianCalendar dateOfSignature) {
-        int diffMonth,diffYears,diffDays;
-        boolean existes = false;
+
+    public boolean pain008Processor(Transaction transaction, String Ccy, String BIC, Date dateOfTransaction, GregorianCalendar dateOfSignature, String sequence_type) {
         String bank = BIC.substring(0, 4);
         GregorianCalendar grgrnCldr = new GregorianCalendar();
         Date today = grgrnCldr.getTime();
-        //System.out.println(today.toString());
-        System.out.println("aujourd'hui  : " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH)); 
-        
+        int diffMonth, diffYears, diffDays;
+        long diffD = ((dateOfTransaction.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+        System.out.println("diff D : " + diffD);
+        boolean existes = false;
+
         //if debit account belongs to existed banks  (RJC000)
         //
         //
-        for ( Banks bankExistes : Banks.values() ) {
-            System.out.println("bankExistes : " + bankExistes.toString() + " " + bankExistes.name());
-            if ( bank.equals(bankExistes.toString()) ) {
+        for (Banks bankExistes : Banks.values()) {
+            if (bank.equals(bankExistes.toString())) {
                 existes = true;
-                System.out.println(" existes TRUE !!");
+                //System.out.println(" existes TRUE !!");
                 break;
             }
         }
-        
-        if ( !existes ) {
+
+        if (!existes) {
+            System.out.println("rejected inexisted bank");
             return false;
         }
-        
+
         // if transaction's amount is less than 1 euro (RJC001)
         //
         //
-        if ( transaction.getAmount() < 1 ) {
+        if (transaction.getAmount() < 1) {
             System.out.println("rejected amount less than 1");
-            return false; 
+            return false;
         }
-        
+
         // if transaction's amount is  greater than 10 000 euros (RJC002)
         //
         //
-        if ( transaction.getAmount() > 10000) {
+        if (transaction.getAmount() > 10000) {
             System.out.println("rejected amount less than 10 000");
             return false;
         }
-        
+
         //if amount's money is different than euro (RJC003)
         //
         //
-        if ( !Ccy.equals("EUR") ) {
+        if (!Ccy.equals("EUR")) {
             return false;
         }
-        
-        //Il n'est pas autorisé de créer une transaction dans la passé (RJC004)
+
+        //no transaction approved in past(RJC004)
         //
         // 
-        if(today.after(dateOfTransaction)) {
+        if (today.after(dateOfTransaction)) {
             System.out.println("rejeted : date of transaction is outdated");
             return false;
         }
-        
-        //Il n'est pas autorisé de créer une transaction dans plus de 13 mois (RJC005)
+
+        //no transaction approved in more than 13 months (RJC005)
         //
         //
         diffYears = today.getYear() - dateOfSignature.getTime().getYear();
-        if(diffYears > 0) {
-            diffMonth = (diffYears*12-dateOfSignature.getTime().getMonth()) + today.getMonth();
-            if(diffMonth > 13) {
+        if (diffYears > 0) {
+            diffMonth = (diffYears * 12 - dateOfSignature.getTime().getMonth()) + today.getMonth();
+            if (diffMonth > 13) {
                 System.out.println("rejected date of transaction outdates 13 months");
                 return false;
             }
-            
-            if(diffMonth == 13) {
+
+            if (diffMonth == 13) {
                 System.out.println("day date of signature : " + dateOfSignature.get(GregorianCalendar.DAY_OF_MONTH) + " today " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH));
                 diffDays = dateOfSignature.get(GregorianCalendar.DAY_OF_MONTH) - grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH);
-                
-                if(diffDays < 0) {
+
+                if (diffDays < 0) {
                     System.out.println("rejected date of transaction outdates 13 months");
                     return false;
                 }
             }
         }
-        
+
+        //If the sequence type (tag <SeqTp>) is RCUR and that the date is in less than 2 days
+        //you must reject the transaction (RJC006)
+        //
+        if (sequence_type.equals("RCUR") && diffD < 2) {
+            System.out.println("rejected : " + today.toString() + " datePrelevement : " + dateOfSignature.toString() + " seqTpType = " + sequence_type);
+            return false;
+        }
+
+        //If the sequence type (tag <SeqTp>) is FRST and the date is in less than 5 days
+        //you must reject the transaction (RJC007)
+        //
+        if (sequence_type.equals("FRST") && diffD < 5) {
+            System.out.println("rejected FRST Or diff < 5");
+            return false;
+        }
+
+        //(RJC008)
+        //
+        //
+        if (sequence_type.equals("RCUR")) {
+            Transaction result = null;
+            result = service.findTransactionByMandatID(transaction.getMandat_debitor());
+
+            if (result == null) {
+                System.out.println("inexisted mandat for these transactions");
+                return false;
+            }
+        }
+
+        //Else, Do persistance
+        //
+        //
         service.createTransaction(transaction);
+
         return true;
     }
-}     
+    
+    /**
+     * Verify if checksum is valide
+     * @param header
+     * @param it
+     * @return 
+     */
+    private boolean checkSumChecker(GroupHeader39 header, Iterator<PaymentInstructionInformation4> it) {
+        int checkSum_nb_transaction = Integer.valueOf(header.getNbOfTxs());
+        int checkSum_ttl_amount = header.getCtrlSum().intValue();
+        int i_nb_transaction = 0;
+        int i_ttl_amount = 0;
+        while (it.hasNext()) {
+            PaymentInstructionInformation4 transaction = it.next();
+            for (DirectDebitTransactionInformation9 tr : transaction.getDrctDbtTxInf()) {
+                i_nb_transaction++;
+                i_ttl_amount += tr.getInstdAmt().getValue().intValue();
+            }
+        }
+        if (checkSum_nb_transaction != i_nb_transaction || checkSum_ttl_amount != i_ttl_amount) {
+            System.out.println("rejected invalidate checksum.");
+            return false;
+        }
+        return true;
+    }
+}

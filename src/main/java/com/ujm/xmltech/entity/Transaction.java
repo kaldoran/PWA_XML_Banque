@@ -2,12 +2,15 @@ package com.ujm.xmltech.entity;
 
 import com.ujm.xmltech.utils.BankSimulationConstants;
 import java.io.Serializable;
+import javax.persistence.CascadeType;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.PersistenceContext;
 
 @Entity
@@ -24,8 +27,6 @@ public class Transaction implements Serializable {
 
     private long amount;
     
-    private String mandatID;
-    
     private String dateOfSignature;
     
     private String IBAN_debitor;
@@ -37,15 +38,21 @@ public class Transaction implements Serializable {
     private String BIC_creditor;
 
     private String endToEndId;
+   
+    private String mandat_debitor;
+    
+    private boolean done;
 
-    public String getMandatID() {
-        return mandatID;
+    public String getMandat_debitor() {
+        return mandat_debitor;
     }
 
-    public void setMandatID(String mandatID) {
-        this.mandatID = mandatID;
+    public void setMandat_debitor(String mandat_debitor) {
+        this.mandat_debitor = mandat_debitor;
     }
 
+    
+    
     public String getDateOfSignature() {
         return dateOfSignature;
     }
@@ -110,4 +117,12 @@ public class Transaction implements Serializable {
         this.endToEndId = endToEndId;
     }
 
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
+    }
+    
 }
