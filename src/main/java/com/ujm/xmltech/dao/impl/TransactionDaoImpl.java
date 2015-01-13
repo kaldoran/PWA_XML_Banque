@@ -12,6 +12,7 @@ import com.ujm.xmltech.entity.QTransaction;
 
 import com.ujm.xmltech.entity.Transaction;
 import com.ujm.xmltech.utils.BankSimulationConstants;
+import java.util.List;
 import org.springframework.transaction.annotation.Propagation;
 
 @Repository("TransactionDao")
@@ -21,7 +22,7 @@ public class TransactionDaoImpl implements TransactionDao {
     protected EntityManager entityManager;
 
     @Override
-    @Transactional(propagation =  Propagation.REQUIRES_NEW,value = BankSimulationConstants.TRANSACTION_MANAGER)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, value = BankSimulationConstants.TRANSACTION_MANAGER)
     public void createTransaction(Transaction transaction) {
         entityManager.persist(transaction);
     }
@@ -44,4 +45,21 @@ public class TransactionDaoImpl implements TransactionDao {
         return q.singleResult(transaction);
     }
 
+    @Override
+    public Transaction findTransactionByMsgId(String mandat_id) {
+        JPAQuery q = new JPAQuery(entityManager);
+        QTransaction transaction = QTransaction.transaction;
+        q.from(transaction);
+        q.where(transaction.msgId.contains(mandat_id));
+        return q.singleResult(transaction);
+    }
+
+    @Override
+    public List<Transaction> findTransactionByDone() {
+        JPAQuery q = new JPAQuery(entityManager);
+        QTransaction transaction = QTransaction.transaction;
+        q.from(transaction);
+        q.where(transaction.done.isFalse());
+        return q.listDistinctResults(transaction).getResults();
+    }
 }

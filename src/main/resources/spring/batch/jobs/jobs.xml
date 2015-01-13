@@ -26,7 +26,8 @@
 	<task:scheduler id="myScheduler" pool-size="10" />
 
 	<task:scheduled-tasks scheduler="myScheduler">
-		<task:scheduled ref="main" method="launch" cron="*/10 * * * * *" />
+		<task:scheduled ref="main" method="launch_IntegratePain008File" cron="*/10 * * * * *" />
+                <task:scheduled ref="main" method="launch_WritePain008File" cron= "*/30 * * * * *"/>
 	</task:scheduled-tasks>
 
 	<bean id="main" class="com.ujm.xmltech.App" />
@@ -58,8 +59,16 @@
 		scope="step" />
 	<bean id="itemProcessor" class="com.ujm.xmltech.tasklet.Pain008Processor"
 		scope="step" />
-	<bean id="xmlFileItemWriter" class="com.ujm.xmltech.tasklet.Pain008Writer"
+	<bean id="xmlFileItemWriter" class="com.ujm.xmltech.tasklet.Pain002Writer"
 		scope="step" />
 	<bean id="moveToArchiveTasklet" class="com.ujm.xmltech.tasklet.MoveToArchive" />
-
+        
+        
+        <bat:job id="WritePain008File">
+		<bat:step id="readDataBase">
+			<bat:tasklet ref="readDataBaseTasklet" />
+		</bat:step>
+	</bat:job>
+        
+        <bean id="readDataBaseTasklet" class="com.ujm.xmltech.tasklet.ReadDataBase" />
 </beans>

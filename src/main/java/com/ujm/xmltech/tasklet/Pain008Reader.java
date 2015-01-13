@@ -27,7 +27,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import com.ujm.xmltech.utils.BankSimulationConstants;
 import com.ujm.xmltech.utils.Banks;
 import iso.std.iso._20022.tech.xsd.pain_008_001.DirectDebitTransactionInformation9;
-import java.security.Timestamp;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ public class Pain008Reader implements Tasklet {
 
     @Autowired
     private TransactionService service;
-    private Date date_today = new Date();
 
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
@@ -44,16 +42,15 @@ public class Pain008Reader implements Tasklet {
             System.out.println("inputFile : " + (String) arg1.getStepContext().getJobParameters().get("inputFile"));
             Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
             /*if(o !=null) {
-                System.out.println("file readed : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
-                + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-                arg1.getStepContext().getStepExecution().getExecutionContext().put("it", o);
-            } else {
-                System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
-                + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-            }*/
+             System.out.println("file readed : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
+             + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
+             arg1.getStepContext().getStepExecution().getExecutionContext().put("it", o);
+             } else {
+             System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
+             + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
+             }*/
         }
 
-        
         return RepeatStatus.FINISHED;
     }
 
@@ -69,53 +66,56 @@ public class Pain008Reader implements Tasklet {
             Document document = (Document) element.getValue();
             GroupHeader39 header = document.getCstmrDrctDbtInitn().getGrpHdr();
             System.out.println(header.getMsgId());
-
-            if(checkSumChecker(header, document.getCstmrDrctDbtInitn().getPmtInf().iterator())) {
             
-                Iterator<PaymentInstructionInformation4> it = document.getCstmrDrctDbtInitn().getPmtInf().iterator();
+            if(checkMsgId(header)) {
+                
+                if (checkSumChecker(header, document.getCstmrDrctDbtInitn().getPmtInf().iterator())) {
 
-                while (it.hasNext()) {
-                    PaymentInstructionInformation4 transaction = it.next();
-                    Transaction t = null;
-                    Iterator<DirectDebitTransactionInformation9> it2 = transaction.getDrctDbtTxInf().iterator();
-                    while (it2.hasNext()) {
-                        t = new Transaction();
-                        DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
+                    Iterator<PaymentInstructionInformation4> it = document.getCstmrDrctDbtInitn().getPmtInf().iterator();
 
-                        t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
+                    while (it.hasNext()) {
+                        PaymentInstructionInformation4 transaction = it.next();
+                        Transaction t = null;
+                        Iterator<DirectDebitTransactionInformation9> it2 = transaction.getDrctDbtTxInf().iterator();
+                        while (it2.hasNext()) {
+                            t = new Transaction();
+                            DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
 
-                        t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId());
+                            t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
 
-                        t.setMandat_debitor(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
+                            t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId());
 
-                        t.setDateOfSignature(String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getDate()) + "-"
-                                + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getMonth()) + "-"
-                                + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getYear()));
+                            t.setMandat_debitor(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
 
-                        t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
+                            t.setDateOfSignature(String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getDate()) + "-"
+                                    + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getMonth()) + "-"
+                                    + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getYear()));
 
-                        t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
+                            t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
 
-                        t.setIBAN_creditor(transaction.getCdtrAcct().getId().getIBAN());
+                            t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
 
-                        t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
-   
-                        // do pain008Processor step
-                        //
-                        //
-                        directDebitTransactionInformation.getPmtTpInf().getSeqTp().value();
-                        pain008Processor(t,
-                                directDebitTransactionInformation.getInstdAmt().getCcy(),
-                                directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
-                                transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
-                                directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar(),
-                                directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
+                            t.setIBAN_creditor(transaction.getCdtrAcct().getId().getIBAN());
 
-                        //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
+                            t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
+
+                            // do pain008Processor step
+                            //
+                            //
+                            directDebitTransactionInformation.getPmtTpInf().getSeqTp().value();
+                            pain008Processor(t,
+                                    directDebitTransactionInformation.getInstdAmt().getCcy(),
+                                    directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
+                                    transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
+                                    directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar(),
+                                    directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
+
+                            //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
+                        }
+
                     }
-                 
-                }
-            } 
+                }   
+            }
         } catch (JAXBException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -238,12 +238,13 @@ public class Pain008Reader implements Tasklet {
 
         return true;
     }
-    
+
     /**
      * Verify if checksum is valide
+     *
      * @param header
      * @param it
-     * @return 
+     * @return
      */
     private boolean checkSumChecker(GroupHeader39 header, Iterator<PaymentInstructionInformation4> it) {
         int checkSum_nb_transaction = Integer.valueOf(header.getNbOfTxs());
@@ -262,5 +263,15 @@ public class Pain008Reader implements Tasklet {
             return false;
         }
         return true;
+    }
+
+    private boolean checkMsgId(GroupHeader39 header) {
+        
+        Transaction foundMsgId = service.findTransactionByMsgId(header.getMsgId().toString());
+        if (foundMsgId == null) {
+            return true;
+        }
+        System.out.println("rejected : existed file in database");
+        return false;
     }
 }

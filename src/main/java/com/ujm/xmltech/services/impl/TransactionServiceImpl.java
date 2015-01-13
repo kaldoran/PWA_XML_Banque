@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.ujm.xmltech.dao.TransactionDao;
 import com.ujm.xmltech.entity.Transaction;
 import com.ujm.xmltech.services.TransactionService;
+import java.util.List;
 
 @Service("TransactionService")
 public class TransactionServiceImpl implements TransactionService {
@@ -21,5 +22,15 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Transaction findTransactionByMandatID(String mandat_id) {
         return dao.findTransactionByMandatID(mandat_id);
+    }
+
+    @Override
+    public Transaction findTransactionByMsgId(String mandat_id) {
+        return dao.findTransactionByMsgId(mandat_id);
+    }
+
+    @Override
+    public List<Transaction> findTransactionByDone() {
+        return dao.findTransactionByDone();
     }
 }
