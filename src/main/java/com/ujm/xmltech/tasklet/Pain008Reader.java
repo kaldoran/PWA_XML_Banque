@@ -44,14 +44,7 @@ public class Pain008Reader implements Tasklet {
         if (Pain008Checker.isValide) {
             System.out.println("inputFile : " + (String) arg1.getStepContext().getJobParameters().get("inputFile"));
             Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
-            /*if(o !=null) {
-             System.out.println("file readed : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
-             + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-             arg1.getStepContext().getStepExecution().getExecutionContext().put("it", o);
-             } else {
-             System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
-             + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-             }*/
+
         }
 
         return RepeatStatus.FINISHED;
