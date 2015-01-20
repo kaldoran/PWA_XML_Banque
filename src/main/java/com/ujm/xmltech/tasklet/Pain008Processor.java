@@ -4,11 +4,6 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.ujm.xmltech.services.TransactionService;
-import iso.std.iso._20022.tech.xsd.pain_008_001.PaymentInstructionInformation4;
-import java.util.Iterator;
 
 public class Pain008Processor implements Tasklet {
 

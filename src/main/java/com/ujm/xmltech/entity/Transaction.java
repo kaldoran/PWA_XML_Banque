@@ -1,11 +1,9 @@
 package com.ujm.xmltech.entity;
 
-import com.ujm.xmltech.utils.BankSimulationConstants;
 import java.io.Serializable;
 import javax.persistence.CascadeType;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;

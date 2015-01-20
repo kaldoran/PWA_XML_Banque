@@ -51,8 +51,8 @@ public class Pain008Checker implements Tasklet {
         System.out.println("file checked : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
                                                         + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
     } else {
-    System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
-                                                        + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
+        System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
+                                                            + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
     }
     return RepeatStatus.FINISHED;
   }
