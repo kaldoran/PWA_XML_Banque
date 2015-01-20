@@ -1,5 +1,6 @@
 package com.ujm.xmltech.tasklet;
 
+import com.ujm.xmltech.entity.Pain008File;
 import com.ujm.xmltech.entity.Transaction;
 import com.ujm.xmltech.services.TransactionService;
 import iso.std.iso._20022.tech.xsd.pain_008_001.Document;
@@ -27,8 +28,10 @@ import org.springframework.batch.repeat.RepeatStatus;
 import com.ujm.xmltech.utils.BankSimulationConstants;
 import com.ujm.xmltech.utils.Banks;
 import iso.std.iso._20022.tech.xsd.pain_008_001.DirectDebitTransactionInformation9;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class Pain008Reader implements Tasklet {
@@ -65,29 +68,40 @@ public class Pain008Reader implements Tasklet {
             JAXBElement element = (JAXBElement) u.unmarshal(fileReader);
             Document document = (Document) element.getValue();
             GroupHeader39 header = document.getCstmrDrctDbtInitn().getGrpHdr();
+            Pain008File file = null;
             System.out.println(header.getMsgId());
-            
-            if(checkMsgId(header)) {
-                
+
+            if (checkMsgId(header)) {
+
                 if (checkSumChecker(header, document.getCstmrDrctDbtInitn().getPmtInf().iterator())) {
-
+                    file = new Pain008File();
+                    file.setMsgId(header.getMsgId());
+                    file.setNameHeader(header.getInitgPty().getNm());
+                    file.setStreetHeader(header.getInitgPty().getPstlAdr().getStrtNm());
+                    file.setTownHeader(header.getInitgPty().getPstlAdr().getTwnNm());
+                    file.setCountry(header.getInitgPty().getPstlAdr().getCtry());
+                    file.setEmail(header.getInitgPty().getCtctDtls().getEmailAdr());
+                    
                     Iterator<PaymentInstructionInformation4> it = document.getCstmrDrctDbtInitn().getPmtInf().iterator();
-
+                    List<Transaction> list_transaction = new ArrayList<Transaction>();
                     while (it.hasNext()) {
                         PaymentInstructionInformation4 transaction = it.next();
                         Transaction t = null;
+
                         Iterator<DirectDebitTransactionInformation9> it2 = transaction.getDrctDbtTxInf().iterator();
+
                         while (it2.hasNext()) {
                             t = new Transaction();
+
                             DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
 
                             t.setAmount(directDebitTransactionInformation.getInstdAmt().getValue().longValue());
 
                             t.setEndToEndId(directDebitTransactionInformation.getPmtId().getEndToEndId());
 
-                            t.setMandat_debitor(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
+                            t.setMndtId(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
 
-                            t.setDateOfSignature(String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getDate()) + "-"
+                            t.setDtOfSgntr(String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getDate()) + "-"
                                     + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getMonth()) + "-"
                                     + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getYear()));
 
@@ -99,22 +113,31 @@ public class Pain008Reader implements Tasklet {
 
                             t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
 
+                            t.setSeqTp(fileName);
+
+                            t.setFile(file);
+
                             // do pain008Processor step
                             //
                             //
                             directDebitTransactionInformation.getPmtTpInf().getSeqTp().value();
-                            pain008Processor(t,
+                            if (pain008Processor(t,
                                     directDebitTransactionInformation.getInstdAmt().getCcy(),
                                     directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
                                     transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
                                     directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar(),
-                                    directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
+                                    directDebitTransactionInformation.getPmtTpInf().getSeqTp().value())) {
+                                list_transaction.add(t);
+
+                            }
 
                             //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
                         }
 
                     }
-                }   
+                    file.setTransaction(list_transaction);
+                    service.createTransaction(file);
+                }
             }
         } catch (JAXBException e) {
             e.printStackTrace();
@@ -223,7 +246,7 @@ public class Pain008Reader implements Tasklet {
         //
         if (sequence_type.equals("RCUR")) {
             Transaction result = null;
-            result = service.findTransactionByMandatID(transaction.getMandat_debitor());
+            result = service.findTransactionByMandatID(transaction.getMndtId());
 
             if (result == null) {
                 System.out.println("inexisted mandat for these transactions");
@@ -234,8 +257,7 @@ public class Pain008Reader implements Tasklet {
         //Else, Do persistance
         //
         //
-        service.createTransaction(transaction);
-
+        // service.createTransaction(transaction);
         return true;
     }
 
@@ -266,7 +288,7 @@ public class Pain008Reader implements Tasklet {
     }
 
     private boolean checkMsgId(GroupHeader39 header) {
-        
+
         Transaction foundMsgId = service.findTransactionByMsgId(header.getMsgId().toString());
         if (foundMsgId == null) {
             return true;

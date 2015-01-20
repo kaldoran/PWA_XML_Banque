@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.ujm.xmltech.dao.TransactionDao;
+import com.ujm.xmltech.entity.Pain008File;
 import com.ujm.xmltech.entity.QTransaction;
 
 import com.ujm.xmltech.entity.Transaction;
@@ -23,7 +24,7 @@ public class TransactionDaoImpl implements TransactionDao {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, value = BankSimulationConstants.TRANSACTION_MANAGER)
-    public void createTransaction(Transaction transaction) {
+    public void createTransaction(Pain008File transaction) {
         entityManager.persist(transaction);
     }
 
@@ -41,7 +42,7 @@ public class TransactionDaoImpl implements TransactionDao {
         JPAQuery q = new JPAQuery(entityManager);
         QTransaction transaction = QTransaction.transaction;
         q.from(transaction);
-        q.where(transaction.mandat_debitor.contains(mandat_id));
+        q.where(transaction.mndtId.contains(mandat_id));
         return q.singleResult(transaction);
     }
 
@@ -50,7 +51,7 @@ public class TransactionDaoImpl implements TransactionDao {
         JPAQuery q = new JPAQuery(entityManager);
         QTransaction transaction = QTransaction.transaction;
         q.from(transaction);
-        q.where(transaction.msgId.contains(mandat_id));
+        q.where(transaction.file.msgId.contains(mandat_id));
         return q.singleResult(transaction);
     }
 
