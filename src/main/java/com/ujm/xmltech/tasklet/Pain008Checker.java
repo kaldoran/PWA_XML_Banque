@@ -33,7 +33,6 @@ public class Pain008Checker implements Tasklet {
     } catch (SAXException e) {
       //e.printStackTrace();
       isValide = false;
-      System.out.println(" ça foncionne !!!!");
       return false;
     } catch (IOException e) {
       e.printStackTrace();
@@ -48,10 +47,10 @@ public class Pain008Checker implements Tasklet {
   @Override
   public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
     if(checkFile((String) arg1.getStepContext().getJobParameters().get("inputFile"))) {
-        System.out.println("file checked : true in ["   + BankSimulationConstants.ARCHIVE_DIRECTORY 
+        System.out.println("file checked : true in ["   + BankSimulationConstants.WORK_DIRECTORY
                                                         + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
     } else {
-    System.out.println("file checked : false ! in ["    + BankSimulationConstants.ARCHIVE_DIRECTORY 
+    System.out.println("file checked : false ! in ["    + BankSimulationConstants.WORK_DIRECTORY
                                                         + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
     }
     return RepeatStatus.FINISHED;

@@ -1,5 +1,6 @@
 package com.ujm.xmltech.tasklet;
 
+import com.ujm.xmltech.adapter.JaxbDateAdapter;
 import com.ujm.xmltech.entity.Pain008File;
 import com.ujm.xmltech.entity.Transaction;
 import com.ujm.xmltech.services.TransactionService;
@@ -101,10 +102,10 @@ public class Pain008Reader implements Tasklet {
 
                             t.setMndtId(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getMndtId());
 
-                            t.setDtOfSgntr(String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getDate()) + "-"
-                                    + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getMonth()) + "-"
-                                    + String.valueOf(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime().getYear()));
-
+                            t.setDtOfSgntr(directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar().getTime());
+                            
+                            t.setReqdColltnDt(transaction.getReqdColltnDt().toGregorianCalendar().getTime());
+                            
                             t.setIBAN_debitor(directDebitTransactionInformation.getDbtrAcct().getId().getIBAN());
 
                             t.setBIC_debitor(directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC());
@@ -113,9 +114,13 @@ public class Pain008Reader implements Tasklet {
 
                             t.setBIC_creditor(transaction.getCdtrAgt().getFinInstnId().getBIC());
 
-                            t.setSeqTp(fileName);
+                            t.setSeqTp(directDebitTransactionInformation.getPmtTpInf().getSeqTp().value());
 
                             t.setFile(file);
+                            
+                            t.setCreditor_name(transaction.getCdtr().getNm());
+                            
+                            t.setDebitor_name(directDebitTransactionInformation.getDbtr().getNm());
 
                             // do pain008Processor step
                             //

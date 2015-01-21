@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.ujm.xmltech.dao.TransactionDao;
 import com.ujm.xmltech.entity.Pain008File;
+import com.ujm.xmltech.entity.QPain008File;
 import com.ujm.xmltech.entity.QTransaction;
 
 import com.ujm.xmltech.entity.Transaction;
@@ -62,5 +63,14 @@ public class TransactionDaoImpl implements TransactionDao {
         q.from(transaction);
         q.where(transaction.done.isFalse());
         return q.listDistinctResults(transaction).getResults();
+    }
+
+    @Override
+    public Pain008File findPain008FileById(long id) {
+        JPAQuery q = new JPAQuery(entityManager);
+        QPain008File pain008File = QPain008File.pain008File;
+        q.from(pain008File);
+        q.where(pain008File.id.eq(id));
+        return q.uniqueResult(pain008File);
     }
 }

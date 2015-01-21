@@ -1,15 +1,16 @@
 package com.ujm.xmltech.entity;
 
-import com.ujm.xmltech.utils.BankSimulationConstants;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.CascadeType;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 public class Transaction implements Serializable {
@@ -46,9 +47,17 @@ public class Transaction implements Serializable {
 
     private String mndtId;
 
-    private String dtOfSgntr;
+    @Temporal(TemporalType.DATE)
+    private Date dtOfSgntr;
+    
+    @Temporal(TemporalType.DATE)
+    private Date ReqdColltnDt;
     
     private String pmtInf;
+    
+    private String creditor_name;
+    
+    private String debitor_name;
     
     private boolean done;
 
@@ -116,12 +125,20 @@ public class Transaction implements Serializable {
         this.mndtId = mndtId;
     }
 
-    public String getDtOfSgntr() {
+    public Date getDtOfSgntr() {
         return dtOfSgntr;
     }
 
-    public void setDtOfSgntr(String dtOfSgntr) {
+    public void setDtOfSgntr(Date dtOfSgntr) {
         this.dtOfSgntr = dtOfSgntr;
+    }
+
+    public Date getReqdColltnDt() {
+        return ReqdColltnDt;
+    }
+
+    public void setReqdColltnDt(Date ReqdColltnDt) {
+        this.ReqdColltnDt = ReqdColltnDt;
     }
 
     public String getIBAN_debitor() {
@@ -170,6 +187,22 @@ public class Transaction implements Serializable {
 
     public void setPmtInf(String pmtInf) {
         this.pmtInf = pmtInf;
+    }
+
+    public String getCreditor_name() {
+        return creditor_name;
+    }
+
+    public void setCreditor_name(String creditor_name) {
+        this.creditor_name = creditor_name;
+    }
+
+    public String getDebitor_name() {
+        return debitor_name;
+    }
+
+    public void setDebitor_name(String debitor_name) {
+        this.debitor_name = debitor_name;
     }
     
 }

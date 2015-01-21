@@ -18,6 +18,14 @@ public class BankSimulationConstants {
    * Directory where are files already processed
    */
   public final static String ARCHIVE_DIRECTORY = "/media/Public/Archive/";
+  /**
+   * Directory where are files already processed
+   */
+  public final static String BKNK_DIRECTORY = "/media/Public/BKNK/";
+  /**
+   * Directory where are files already processed
+   */
+  public final static String UDEV_DIRECTORY = "/media/Public/UDEV/";
   
   /**
    * Directory where file go when reject

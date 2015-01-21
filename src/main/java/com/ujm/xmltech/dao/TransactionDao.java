@@ -16,4 +16,5 @@ public interface TransactionDao {
   
   List<Transaction> findTransactionByDone();
 
+  Pain008File findPain008FileById(long id);
 }

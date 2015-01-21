@@ -13,5 +13,7 @@ public interface TransactionService {
         Transaction findTransactionByMsgId(String mandat_id);
         
         List<Transaction> findTransactionByDone();
+        
+        Pain008File findPain008FileById(long id);
 	
 }

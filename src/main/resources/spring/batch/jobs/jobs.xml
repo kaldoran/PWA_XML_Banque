@@ -65,10 +65,14 @@
         
         
         <bat:job id="WritePain008File">
-		<bat:step id="readDataBase">
+		<bat:step id="readDataBase" next="writePain008">
 			<bat:tasklet ref="readDataBaseTasklet" />
+		</bat:step>
+                <bat:step id="writePain008">
+			<bat:tasklet ref="writePain008Tasklet" />
 		</bat:step>
 	</bat:job>
         
         <bean id="readDataBaseTasklet" class="com.ujm.xmltech.tasklet.ReadDataBase" />
+        <bean id="writePain008Tasklet" class="com.ujm.xmltech.tasklet.Pain008Writer" />
 </beans>
