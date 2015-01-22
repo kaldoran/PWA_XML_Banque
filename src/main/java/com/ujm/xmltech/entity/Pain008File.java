@@ -8,6 +8,7 @@ package com.ujm.xmltech.entity;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -31,6 +32,7 @@ public class Pain008File implements Serializable {
     @OneToMany(mappedBy = "file", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Transaction> transaction;
 
+    @Column(unique = true)
     private String msgId;
 
     private String nameHeader;

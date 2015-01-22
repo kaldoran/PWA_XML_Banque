@@ -16,4 +16,5 @@ public interface TransactionService {
         
         Pain008File findPain008FileById(long id);
 	
+        void updateProceced();
 }

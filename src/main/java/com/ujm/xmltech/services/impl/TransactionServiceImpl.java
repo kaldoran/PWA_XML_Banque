@@ -39,4 +39,9 @@ public class TransactionServiceImpl implements TransactionService {
     public Pain008File findPain008FileById(long id) {
         return dao.findPain008FileById(id);
     }
+
+    @Override
+    public void updateProceced() {
+        dao.updateProceced();
+    }
 }

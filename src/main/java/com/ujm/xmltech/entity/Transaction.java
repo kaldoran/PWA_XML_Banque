@@ -3,6 +3,7 @@ package com.ujm.xmltech.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,6 +29,7 @@ public class Transaction implements Serializable {
 
     private String BIC_debitor;
 
+    @Column(updatable = true)
     private boolean proceced = false;
 
     private boolean transfer = false;
@@ -61,6 +63,7 @@ public class Transaction implements Serializable {
     
     private String debitor_name;
     
+    @Column(updatable = true, insertable = true)
     private boolean done;
 
     public long getId() {

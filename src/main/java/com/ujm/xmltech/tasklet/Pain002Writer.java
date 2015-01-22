@@ -33,6 +33,7 @@ import iso.std.iso._20022.tech.xsd.pain_002_001.StatusReasonInformation8;
 import iso.std.iso._20022.tech.xsd.pain_002_001.TransactionIndividualStatus3Code;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.XMLConstants;
@@ -50,17 +51,20 @@ public class Pain002Writer implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
         if (Pain008Reader.hashMap_transactions != null) {
-            for (String test : Pain008Reader.hashMap_transactions.keySet()) {
+            
+            CustomerPaymentStatusReportV03 cstmrPmtStsRpt = fillInPain002(Pain008Reader.hashMap_transactions);
+            write(cstmrPmtStsRpt);   
+            /*for (String test : Pain008Reader.hashMap_transactions.keySet()) {
                 if(!(test.equals("PERSIST"))) {
                     if( !(Pain008Reader.hashMap_transactions.get(test).isEmpty()) ) {
                         CustomerPaymentStatusReportV03 cstmrPmtStsRpt = fillInPain002(Pain008Reader.hashMap_transactions.get(test), test);
                         if(cstmrPmtStsRpt != null) {
-                            write(cstmrPmtStsRpt);   
+                            
                         }
                     }
 
                 }
-            }
+            }*/
         }
         
         
@@ -123,7 +127,7 @@ public class Pain002Writer implements Tasklet {
         return fragment;
     }
 
-    private CustomerPaymentStatusReportV03 fillInPain002(ArrayList<Transaction> transactions, String test) {
+    private CustomerPaymentStatusReportV03 fillInPain002(HashMap<String, ArrayList<Transaction>> hashMap_transactions) {
         CustomerPaymentStatusReportV03 cstmrPmtStsRpt = null;
         XMLGregorianCalendar xmlGregorianCalendar = null;
         GroupHeader36 grpHdr = null;
@@ -154,23 +158,31 @@ public class Pain002Writer implements Tasklet {
         orgnlGrpInfAndSts.setOrgnlMsgId("xxxxx.xxxxxx.xxxx");
         orgnlGrpInfAndSts.setOrgnlMsgNmId("PAIN.008.001.02");
         
-        for(Transaction t : transactions) {
-            rsn = new StatusReason6Choice();
-            rsn.setCd(test);
-
-            stsRsnInf = new StatusReasonInformation8();
-            stsRsnInf.setRsn(rsn);
-            
-            txInfAndSts = new PaymentTransactionInformation25();
-            txInfAndSts.getStsRsnInf().add(stsRsnInf);
-            txInfAndSts.setOrgnlEndToEndId(t.getEndToEndId());
-            txInfAndSts.setTxSts(TransactionIndividualStatus3Code.RJCT);
-           
-        }
         orgnlPmtInfAndSts = new OriginalPaymentInformation1();
         orgnlPmtInfAndSts.setOrgnlPmtInfId("FRXXXXXZZZZZXXXXX-xxxx");
-        orgnlPmtInfAndSts.getTxInfAndSts().add(txInfAndSts);
         
+        for(String test : hashMap_transactions.keySet()) {
+            if ( !(test.equals("PERSIST")) ) {
+                ArrayList<Transaction> transactions = hashMap_transactions.get(test);
+
+                if ( !(transactions.isEmpty()) ) {
+                    for(Transaction t : transactions) {
+                        rsn = new StatusReason6Choice();
+                        rsn.setCd(test);
+
+                        stsRsnInf = new StatusReasonInformation8();
+                        stsRsnInf.setRsn(rsn);
+
+                        txInfAndSts = new PaymentTransactionInformation25();
+                        txInfAndSts.getStsRsnInf().add(stsRsnInf);
+                        txInfAndSts.setOrgnlEndToEndId(t.getEndToEndId());
+                        txInfAndSts.setTxSts(TransactionIndividualStatus3Code.RJCT);
+                        orgnlPmtInfAndSts.getTxInfAndSts().add(txInfAndSts);
+                    }
+                }
+            }
+        }
+    
         cstmrPmtStsRpt = new CustomerPaymentStatusReportV03();
         cstmrPmtStsRpt.setGrpHdr(grpHdr);
         cstmrPmtStsRpt.setOrgnlGrpInfAndSts(orgnlGrpInfAndSts);

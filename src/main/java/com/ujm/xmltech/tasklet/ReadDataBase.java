@@ -35,13 +35,12 @@ public class ReadDataBase implements Tasklet {
         List<Transaction> listTransaction = null;
       
         listTransaction = service.findTransactionByDone();
+        service.updateProceced();
 
         hashMap_transactionsSortedByBanks = sortByBank(listTransaction);
 
         return RepeatStatus.FINISHED;
     }
-
-    
 
     private HashMap<String, ArrayList<Transaction>> sortByBank(List<Transaction> list) {
         HashMap<String, ArrayList<Transaction>> hashmap = null;

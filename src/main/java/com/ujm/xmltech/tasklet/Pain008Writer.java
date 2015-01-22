@@ -59,10 +59,10 @@ import org.springframework.batch.repeat.RepeatStatus;
  */
 public class Pain008Writer implements Tasklet {
     private static long id_file = 1000;
-    public static HashMap<String, Object> hashMap_cstmrDrctDbtInitn;
+    //public static HashMap<String, Object> hashMap_cstmrDrctDbtInitn;
     @Override
     public RepeatStatus execute(StepContribution sc, ChunkContext cc) throws Exception {
-        hashMap_cstmrDrctDbtInitn = new HashMap<String, Object>();
+        //hashMap_cstmrDrctDbtInitn = new HashMap<String, Object>();
         if (ReadDataBase.hashMap_transactionsSortedByBanks != null) {
             for (String key : ReadDataBase.hashMap_transactionsSortedByBanks.keySet()) {
                 CustomerDirectDebitInitiationV02 pain008 = fillInPain008(ReadDataBase.hashMap_transactionsSortedByBanks.get(key));
@@ -85,7 +85,6 @@ public class Pain008Writer implements Tasklet {
         System.out.println("fin Pain008Writer");
         return RepeatStatus.FINISHED;
     }
-    
     
     public void write(Object item, String bank) {
         //Added a random in order to have a different file each time

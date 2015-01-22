@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.jpa.impl.JPAUpdateClause;
 import com.ujm.xmltech.dao.TransactionDao;
 import com.ujm.xmltech.entity.Pain008File;
 import com.ujm.xmltech.entity.QPain008File;
@@ -76,7 +77,10 @@ public class TransactionDaoImpl implements TransactionDao {
 
     @Override
     public void updateProceced() {
-        JPAQuery q = new JPAQuery(entityManager);
         QTransaction transaction = QTransaction.transaction;
+        JPAUpdateClause query = new JPAUpdateClause(entityManager, transaction);        
+        query.where(transaction.done.isFalse());
+        query.set(transaction.done, Boolean.FALSE);
+        query.execute() ;
     }
 }
