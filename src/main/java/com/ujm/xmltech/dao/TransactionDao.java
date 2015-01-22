@@ -6,15 +6,17 @@ import java.util.List;
 
 public interface TransactionDao {
 
-  void createTransaction(Pain008File transaction);
+    void createTransaction(Pain008File transaction);
 
-  Transaction findTransactionById(long id);
-  
-  Transaction findTransactionByMandatID(String mandat_id);
-  
-  Transaction findTransactionByMsgId(String mandat_id);
-  
-  List<Transaction> findTransactionByDone();
+    Transaction findTransactionById(long id);
 
-  Pain008File findPain008FileById(long id);
+    Transaction findTransactionByMandatID(String mandat_id);
+
+    Transaction findTransactionByMsgId(String mandat_id);
+
+    List<Transaction> findTransactionByDone();
+
+    Pain008File findPain008FileById(long id);
+    
+    void updateProceced();
 }

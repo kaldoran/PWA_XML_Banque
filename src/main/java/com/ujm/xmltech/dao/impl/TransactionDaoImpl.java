@@ -73,4 +73,10 @@ public class TransactionDaoImpl implements TransactionDao {
         q.where(pain008File.id.eq(id));
         return q.uniqueResult(pain008File);
     }
+
+    @Override
+    public void updateProceced() {
+        JPAQuery q = new JPAQuery(entityManager);
+        QTransaction transaction = QTransaction.transaction;
+    }
 }

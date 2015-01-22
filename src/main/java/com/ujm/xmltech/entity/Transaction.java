@@ -42,6 +42,8 @@ public class Transaction implements Serializable {
     private String endToEndId;
 
     private String seqTp;
+    
+    private String CCy;
 
     private long amount;
 
@@ -107,6 +109,14 @@ public class Transaction implements Serializable {
 
     public void setSeqTp(String seqTp) {
         this.seqTp = seqTp;
+    }
+
+    public String getCCy() {
+        return CCy;
+    }
+
+    public void setCCy(String CCy) {
+        this.CCy = CCy;
     }
 
     public long getAmount() {

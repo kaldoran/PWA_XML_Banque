@@ -19,41 +19,41 @@ import com.ujm.xmltech.utils.BankSimulationConstants;
 
 public class Pain008Checker implements Tasklet {
 
-  public static boolean isValide = true;
-    
-  public boolean checkFile(String fileName) {
-    isValide = true;
-    try {
-      File fileToValidate = new File(BankSimulationConstants.WORK_DIRECTORY + fileName);
-      File xsdFile = new File(BankSimulationConstants.XSD_DIRECTORY + "pain.008.001.02.xsd");
-      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      Schema schema = factory.newSchema(new StreamSource(xsdFile));
-      Validator validator = schema.newValidator();
-      validator.validate(new StreamSource(fileToValidate));
-    } catch (SAXException e) {
-      //e.printStackTrace();
-      isValide = false;
-      return false;
-    } catch (IOException e) {
-      e.printStackTrace();
-      isValide = false;
-        
-      return false;
-    }
-    
-    return true;
-  }
+    public static boolean isValide = true;
 
-  @Override
-  public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
-    if(checkFile((String) arg1.getStepContext().getJobParameters().get("inputFile"))) {
-        System.out.println("file checked : true in ["   + BankSimulationConstants.WORK_DIRECTORY
-                                                        + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
-    } else {
-    System.out.println("file checked : false ! in ["    + BankSimulationConstants.WORK_DIRECTORY
-                                                        + (String) arg1.getStepContext().getJobParameters().get("inputFile")+ "]" );
+    public boolean checkFile(String fileName) {
+        isValide = true;
+        try {
+            File fileToValidate = new File(BankSimulationConstants.WORK_DIRECTORY + fileName);
+            File xsdFile = new File(BankSimulationConstants.XSD_DIRECTORY + "pain.008.001.02.xsd");
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = factory.newSchema(new StreamSource(xsdFile));
+            Validator validator = schema.newValidator();
+            validator.validate(new StreamSource(fileToValidate));
+        } catch (SAXException e) {
+            //e.printStackTrace();
+            isValide = false;
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            isValide = false;
+
+            return false;
+        }
+
+        return true;
     }
-    return RepeatStatus.FINISHED;
-  }
+
+    @Override
+    public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
+        if (checkFile((String) arg1.getStepContext().getJobParameters().get("inputFile"))) {
+            System.out.println("file checked : true in [" + BankSimulationConstants.WORK_DIRECTORY
+                    + (String) arg1.getStepContext().getJobParameters().get("inputFile") + "]");
+        } else {
+            System.out.println("file checked : false ! in [" + BankSimulationConstants.WORK_DIRECTORY
+                    + (String) arg1.getStepContext().getJobParameters().get("inputFile") + "]");
+        }
+        return RepeatStatus.FINISHED;
+    }
 
 }

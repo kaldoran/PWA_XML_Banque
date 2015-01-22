@@ -32,6 +32,7 @@ import iso.std.iso._20022.tech.xsd.pain_008_001.DirectDebitTransactionInformatio
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,13 +40,13 @@ public class Pain008Reader implements Tasklet {
 
     @Autowired
     private TransactionService service;
+    public static HashMap<String, ArrayList<Transaction>> hashMap_transactions;
 
     @Override
     public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
         if (Pain008Checker.isValide) {
             System.out.println("inputFile : " + (String) arg1.getStepContext().getJobParameters().get("inputFile"));
             Object o = read((String) arg1.getStepContext().getJobParameters().get("inputFile"));
-
         }
 
         return RepeatStatus.FINISHED;
@@ -80,12 +81,11 @@ public class Pain008Reader implements Tasklet {
                     List<Transaction> list_transaction = new ArrayList<Transaction>();
                     while (it.hasNext()) {
                         PaymentInstructionInformation4 transaction = it.next();
-                        Transaction t = null;
 
                         Iterator<DirectDebitTransactionInformation9> it2 = transaction.getDrctDbtTxInf().iterator();
 
                         while (it2.hasNext()) {
-                            t = new Transaction();
+                            Transaction t = new Transaction();
 
                             DirectDebitTransactionInformation9 directDebitTransactionInformation = it2.next();
 
@@ -114,26 +114,19 @@ public class Pain008Reader implements Tasklet {
                             t.setCreditor_name(transaction.getCdtr().getNm());
                             
                             t.setDebitor_name(directDebitTransactionInformation.getDbtr().getNm());
-
-                            // do pain008Processor step
-                            //
-                            //
-                            directDebitTransactionInformation.getPmtTpInf().getSeqTp().value();
-                            if (pain008Processor(t,
-                                    directDebitTransactionInformation.getInstdAmt().getCcy(),
-                                    directDebitTransactionInformation.getDbtrAgt().getFinInstnId().getBIC(),
-                                    transaction.getReqdColltnDt().toGregorianCalendar().getTime(),
-                                    directDebitTransactionInformation.getDrctDbtTx().getMndtRltdInf().getDtOfSgntr().toGregorianCalendar(),
-                                    directDebitTransactionInformation.getPmtTpInf().getSeqTp().value())) {
-                                list_transaction.add(t);
-
-                            }
-
-                            //service.createTransaction(directDebitTransactionInformation.getInstdAmt().getValue().longValue(), directDebitTransactionInformation.getPmtId().getEndToEndId());
+                            
+                            t.setCCy(directDebitTransactionInformation.getInstdAmt().getCcy());
+                            list_transaction.add(t);
+                          
                         }
-
                     }
-                    file.setTransaction(list_transaction);
+
+                    // do pain008Processor step
+                    //
+                    //
+                    hashMap_transactions = pain008Processor(list_transaction);
+
+                    file.setTransaction(hashMap_transactions.get("PERSIST"));
                     service.createTransaction(file);
                 }
             }
@@ -145,118 +138,134 @@ public class Pain008Reader implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    public boolean pain008Processor(Transaction transaction, String Ccy, String BIC, Date dateOfTransaction, GregorianCalendar dateOfSignature, String sequence_type) {
-        String bank = BIC.substring(0, 4);
+    public HashMap<String, ArrayList<Transaction>> pain008Processor(List<Transaction> list_transaction) {
         GregorianCalendar grgrnCldr = new GregorianCalendar();
         Date today = grgrnCldr.getTime();
         int diffMonth, diffYears, diffDays;
-        long diffD = ((dateOfTransaction.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-        System.out.println("diff D : " + diffD);
-        boolean existes = false;
+        HashMap<String, ArrayList<Transaction>> hashMap_transactions = new HashMap<String, ArrayList<Transaction>>();
+        
+        hashMap_transactions.put("PERSIST", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC000", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC001", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC002", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC003", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC004", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC006", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC007", new ArrayList<Transaction>());
+        hashMap_transactions.put("RJC008", new ArrayList<Transaction>());
+        
 
-        //if debit account belongs to existed banks  (RJC000)
-        //
-        //
-        for (Banks bankExistes : Banks.values()) {
-            if (bank.equals(bankExistes.toString())) {
-                existes = true;
-                //System.out.println(" existes TRUE !!");
-                break;
-            }
-        }
-
-        if (!existes) {
-            System.out.println("rejected inexisted bank");
-            return false;
-        }
-
-        // if transaction's amount is less than 1 euro (RJC001)
-        //
-        //
-        if (transaction.getAmount() < 1) {
-            System.out.println("rejected amount less than 1");
-            return false;
-        }
-
-        // if transaction's amount is  greater than 10 000 euros (RJC002)
-        //
-        //
-        if (transaction.getAmount() > 10000) {
-            System.out.println("rejected amount less than 10 000");
-            return false;
-        }
-
-        //if amount's money is different than euro (RJC003)
-        //
-        //
-        if (!Ccy.equals("EUR")) {
-            return false;
-        }
-
-        //no transaction approved in past(RJC004)
-        //
-        // 
-        if (today.after(dateOfTransaction)) {
-            System.out.println("rejeted : date of transaction is outdated");
-            return false;
-        }
-
-        //no transaction approved in more than 13 months (RJC005)
-        //
-        //
-        diffYears = today.getYear() - dateOfSignature.getTime().getYear();
-        if (diffYears > 0) {
-            diffMonth = (diffYears * 12 - dateOfSignature.getTime().getMonth()) + today.getMonth();
-            if (diffMonth > 13) {
-                System.out.println("rejected date of transaction outdates 13 months");
-                return false;
-            }
-
-            if (diffMonth == 13) {
-                System.out.println("day date of signature : " + dateOfSignature.get(GregorianCalendar.DAY_OF_MONTH) + " today " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH));
-                diffDays = dateOfSignature.get(GregorianCalendar.DAY_OF_MONTH) - grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH);
-
-                if (diffDays < 0) {
-                    System.out.println("rejected date of transaction outdates 13 months");
-                    return false;
+        for ( Transaction transaction : list_transaction) {
+            boolean existes = false;
+            long diffD = ((transaction.getDtOfSgntr().getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+            System.out.println("diff D : " + diffD);
+            
+            //if debit account belongs to existed banks  (RJC000)
+            //
+            //
+            for (Banks bankExistes : Banks.values()) {
+                if (transaction.getBIC_debitor().substring(0, 4).equals(bankExistes.toString())) {
+                    existes = true;
+                    break;
                 }
             }
-        }
 
-        //If the sequence type (tag <SeqTp>) is RCUR and that the date is in less than 2 days
-        //you must reject the transaction (RJC006)
-        //
-        if (sequence_type.equals("RCUR") && diffD < 2) {
-            System.out.println("rejected : " + today.toString() + " datePrelevement : " + dateOfSignature.toString() + " seqTpType = " + sequence_type);
-            return false;
-        }
-
-        //If the sequence type (tag <SeqTp>) is FRST and the date is in less than 5 days
-        //you must reject the transaction (RJC007)
-        //
-        if (sequence_type.equals("FRST") && diffD < 5) {
-            System.out.println("rejected FRST Or diff < 5");
-            return false;
-        }
-
-        //(RJC008)
-        //
-        //
-        if (sequence_type.equals("RCUR")) {
-            Transaction result = null;
-            result = service.findTransactionByMandatID(transaction.getMndtId());
-
-            if (result == null) {
-                System.out.println("inexisted mandat for these transactions");
-                return false;
+            if (!existes) {
+                System.out.println("rejected inexisted bank");
+                hashMap_transactions.get("RJC000").add(transaction);
             }
-        }
 
+            // if transaction's amount is less than 1 euro (RJC001)
+            //
+            //
+            if (transaction.getAmount() < 1) {
+                System.out.println("rejected amount less than 1");
+                hashMap_transactions.get("RJC001").add(transaction);
+            }
+
+            // if transaction's amount is  greater than 10 000 euros (RJC002)
+            //
+            //
+            if (transaction.getAmount() > 10000) {
+                System.out.println("rejected amount less than 10 000");
+                hashMap_transactions.get("RJC002").add(transaction);
+            }
+
+            //if amount's money is different than euro (RJC003)
+            //
+            //
+            if (!transaction.getCCy().equals("EUR")) {
+                System.out.println("");
+                hashMap_transactions.get("RJC003").add(transaction);
+            }
+
+            //no transaction approved in past(RJC004)
+            //
+            // 
+            if (today.after(transaction.getReqdColltnDt())) {
+                System.out.println("rejeted : date of transaction is outdated");
+                hashMap_transactions.get("RJC004").add(transaction);
+            }
+
+            //no transaction approved in more than 13 months (RJC005)
+            //
+            //
+            diffYears = today.getYear() - transaction.getDtOfSgntr().getYear();
+            if (diffYears > 0) {
+                diffMonth = (diffYears * 12 - transaction.getDtOfSgntr().getMonth()) + today.getMonth();
+                if (diffMonth > 13) {
+                    System.out.println("rejected date of transaction outdates 13 months");
+                    hashMap_transactions.get("RJC005").add(transaction);
+                }
+
+                if (diffMonth == 13) {
+                    GregorianCalendar tmp = new GregorianCalendar();
+                    tmp.setTime(transaction.getDtOfSgntr());
+                    System.out.println("day date of signature : " + tmp.get(GregorianCalendar.DAY_OF_MONTH) + " today " + grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH));
+                    diffDays = tmp.get(GregorianCalendar.DAY_OF_MONTH) - grgrnCldr.get(GregorianCalendar.DAY_OF_MONTH);
+
+                    if (diffDays < 0) {
+                        System.out.println("rejected date of transaction outdates 13 months");
+                        hashMap_transactions.get("RJC005").add(transaction);
+                    }
+                }
+            }
+
+            //If the sequence type (tag <SeqTp>) is RCUR and that the date is in less than 2 days
+            //you must reject the transaction (RJC006)
+            //
+            if (transaction.getSeqTp().equals("RCUR") && diffD < 2) {
+                System.out.println("rejected : " + today.toString() + " datePrelevement : " + transaction.getDtOfSgntr().toString() + " seqTpType = " + transaction.getSeqTp());
+                hashMap_transactions.get("RJC006").add(transaction);
+            }
+
+            //If the sequence type (tag <SeqTp>) is FRST and the date is in less than 5 days
+            //you must reject the transaction (RJC007)
+            //
+            if (transaction.getSeqTp().equals("FRST") && diffD < 5) {
+                System.out.println("rejected FRST Or diff < 5");
+                hashMap_transactions.get("RJC007").add(transaction);
+            }
+
+            //(RJC008)
+            //
+            //
+            if (transaction.getSeqTp().equals("RCUR")) {
+                Transaction result = null;
+                result = service.findTransactionByMandatID(transaction.getMndtId());
+
+                if (result == null) {
+                    System.out.println("inexisted mandat for these transactions");
+                    hashMap_transactions.get("RJC000").add(transaction);
+                }
+            }
+            
+            hashMap_transactions.get("PERSIST").add(transaction);
+        }
         //Else, Do persistance
         //
         //
-        // service.createTransaction(transaction);
-        return true;
+        return hashMap_transactions;
     }
 
     /**
